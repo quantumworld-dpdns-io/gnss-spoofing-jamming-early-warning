@@ -1,0 +1,17 @@
+[package]
+name = "alert-engine"
+version.workspace = true
+edition.workspace = true
+description = "Alert generation and notification dispatch engine"
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+reqwest.workspace = true
+uuid.workspace = true
+parking_lot.workspace = true
+dashmap.workspace = true
