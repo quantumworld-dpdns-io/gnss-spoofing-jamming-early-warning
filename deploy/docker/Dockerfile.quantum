@@ -1,0 +1,12 @@
+FROM nvidia/cuda:12.8-runtime-ubuntu24.04 AS quantum-base
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-venv curl && \
+    rm -rf /var/lib/apt/lists/*
+RUN python3 -m venv /opt/quantum
+ENV PATH="/opt/quantum/bin:$PATH"
+COPY src/detection-engine/python/quantum/ /app/quantum/
+COPY src/detection-engine/python/requirements-quantum.txt /app/
+RUN pip install --no-cache-dir -r /app/requirements-quantum.txt
+RUN pip install --no-cache-dir qiskit-aer qiskit-ibm-runtime pennylane
+WORKDIR /app
+CMD ["python3", "-m", "quantum.autoencoder"]
