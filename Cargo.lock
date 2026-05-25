@@ -1109,6 +1109,7 @@ dependencies = [
  "chrono",
  "gnss-parser",
  "ndarray",
+ "rand",
  "serde",
  "signal-processing",
  "thiserror",
