@@ -37,8 +37,8 @@ class VariationalQuantumClassifier:
         if self.weights is None:
             self._init_weights()
         start = layer_idx * self.n_qubits * 3
-        w = self.weights[start : start + self.n_qubits * 3]
-        return x + 0.01 * np.sin(x.reshape(-1, 1) @ w.reshape(1, -1)).sum(axis=1)
+        w = self.weights[start : start + self.n_qubits]
+        return x + 0.01 * np.sin(x * w.reshape(1, -1))
 
     def forward(self, x: np.ndarray) -> np.ndarray:
         x_enc = self._encode(x)
