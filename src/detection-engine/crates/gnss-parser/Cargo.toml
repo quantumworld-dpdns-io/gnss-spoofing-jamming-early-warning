@@ -10,6 +10,6 @@ serde.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
 thiserror.workspace = true
-bytes.workspace = true
+bytes = { workspace = true, features = ["serde"] }
 chrono.workspace = true
 nom = "7"
