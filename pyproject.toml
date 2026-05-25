@@ -1,0 +1,89 @@
+[project]
+name = "gnss-detection"
+version = "0.1.0"
+description = "GNSS Spoofing/Jamming Early Warning System - Python packages"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.14",
+    "pandas>=2.2",
+    "pydantic>=2.0",
+    "qiskit>=1.2",
+    "qiskit-machine-learning>=0.8",
+    "qiskit-ibm-runtime>=0.34",
+    "pennylane>=0.40",
+    "matplotlib>=3.9",
+    "plotly>=5.24",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic-settings>=2.6",
+    "httpx>=0.28",
+    "structlog>=24.4",
+    "opentelemetry-api>=1.28",
+    "opentelemetry-sdk>=1.28",
+    "opentelemetry-exporter-otlp>=1.28",
+    "duckdb>=1.1",
+    "lancedb>=0.16",
+    "redis>=5.2",
+    "pyarrow>=18.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=5.0",
+    "pytest-benchmark>=5.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pre-commit>=4.0",
+    "ipykernel>=6.29",
+    "jupyter>=1.1",
+    "nbformat>=5.10",
+]
+quantum = [
+    "qiskit-qir>=0.6",
+    "qiskit-dynamics>=0.5",
+    "qiskit-experiments>=0.7",
+]
+security = [
+    "cryptography>=44.0",
+    "pyjwt>=2.10",
+    "passlib>=1.7",
+    "bcrypt>=4.2",
+    "python-jose>=3.3",
+]
+test = [
+    "robotframework>=7.1",
+    "robotframework-seleniumlibrary>=6.6",
+    "robotframework-requestslibrary>=0.9",
+    "robotframework-databaselibrary>=2.0",
+    "locust>=2.32",
+    "owasp-zap-v2>=0.0.14",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ARG", "C4", "RUF"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --cov --cov-report=html --cov-report=term"
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
