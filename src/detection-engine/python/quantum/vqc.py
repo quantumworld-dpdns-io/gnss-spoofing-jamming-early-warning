@@ -67,10 +67,9 @@ class VariationalQuantumClassifier:
             )
             losses.append(float(loss))
             error = preds - y_train
-            grad = x_train.T @ error / x_train.shape[0]
-            self.weights -= self.learning_rate * grad[: len(self.weights)]
-            if epoch % 10 == 0:
-                pass
+            grad = (x_train.T @ error) / x_train.shape[0]
+            grad_full = np.tile(grad, self.n_layers + 1)
+            self.weights -= self.learning_rate * grad_full[: len(self.weights)]
         self._fitted = True
         return losses
 
