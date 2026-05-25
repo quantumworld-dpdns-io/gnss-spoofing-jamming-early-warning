@@ -8,6 +8,7 @@ pub use rules::*;
 
 use dashmap::DashMap;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::sync::broadcast;
 
 pub struct AlertEngine {
@@ -81,17 +82,19 @@ impl AlertEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::atomic::{AtomicBool, Ordering};
 
     struct TestDispatcher {
         called: Arc<AtomicBool>,
     }
 
-    #[async_trait::async_trait]
     impl AlertDispatcher for TestDispatcher {
-        async fn dispatch(&self, _alert: &Alert) -> Result<(), AlertError> {
-            self.called.store(true, Ordering::SeqCst);
-            Ok(())
+        fn dispatch(&self, alert: &Alert) -> dispatcher::DispatchResult {
+            let called = self.called.clone();
+            let _alert_id = alert.id.clone();
+            Box::pin(async move {
+                called.store(true, Ordering::SeqCst);
+                Ok(())
+            })
         }
     }
 
@@ -102,7 +105,7 @@ mod tests {
         engine.add_dispatcher(Box::new(TestDispatcher { called: called.clone() }));
         engine.add_rule(AlertRule::new(
             "test".into(), Severity::Warning, "test rule".into(),
-            Box::new(|ctx: &AlertContext| ctx.score > 0.5),
+            |ctx: &AlertContext| ctx.score > 0.5,
         ));
         let ctx = AlertContext { score: 0.8, ..Default::default() };
         let alerts = engine.evaluate(&ctx).await;
