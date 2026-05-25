@@ -1,0 +1,15 @@
+[package]
+name = "quantum-detector"
+version.workspace = true
+edition.workspace = true
+description = "Quantum-enhanced GNSS spoofing detection using Qiskit/CUDA-Q"
+
+[dependencies]
+gnss-parser = { path = "../gnss-parser" }
+signal-processing = { path = "../signal-processing" }
+tokio.workspace = true
+serde.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+ndarray = "0.16"

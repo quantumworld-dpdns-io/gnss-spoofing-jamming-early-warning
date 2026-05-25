@@ -1,0 +1,16 @@
+[package]
+name = "signal-processing"
+version.workspace = true
+edition.workspace = true
+description = "Classical signal processing for GNSS spoofing detection"
+
+[dependencies]
+gnss-parser = { path = "../gnss-parser" }
+tokio.workspace = true
+serde.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+ndarray = "0.16"
+ndarray-stats = "0.6"
+rustfft = "6.2"
