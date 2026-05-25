@@ -38,10 +38,7 @@ impl UbxFrame {
             calc_b = calc_b.wrapping_add(calc_a);
         }
         if calc_a != ck_a || calc_b != ck_b {
-            return Err(ParseError::ChecksumMismatch {
-                expected: u16::from_le_bytes([ck_a, ck_b]),
-                actual: u16::from_le_bytes([calc_a, calc_b]),
-            });
+            return Err(ParseError::ChecksumMismatch { expected: ck_a, actual: calc_a });
         }
         Ok((UbxFrame { class, id, length, payload }, total_len))
     }
