@@ -1,0 +1,15 @@
+[package]
+name = "gnss-parser"
+version.workspace = true
+edition.workspace = true
+description = "GNSS protocol parsers: NMEA 0183, UBX, RTCM 3.3"
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+bytes.workspace = true
+chrono.workspace = true
+nom = "7"
