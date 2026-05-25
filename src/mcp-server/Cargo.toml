@@ -1,0 +1,18 @@
+[package]
+name = "mcp-server"
+version.workspace = true
+edition.workspace = true
+description = "Model Context Protocol (MCP) server for GNSS spoofing detection tools"
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+reqwest.workspace = true
+uuid.workspace = true
+gnss-parser = { path = "../detection-engine/crates/gnss-parser" }
+signal-processing = { path = "../detection-engine/crates/signal-processing" }
+quantum-detector = { path = "../detection-engine/crates/quantum-detector" }
