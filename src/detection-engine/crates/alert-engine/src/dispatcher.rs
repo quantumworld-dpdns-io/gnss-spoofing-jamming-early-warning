@@ -1,24 +1,31 @@
 use crate::models::{Alert, AlertError};
-use async_trait::async_trait;
+use std::future::Future;
+use std::pin::Pin;
 
-#[async_trait]
+pub type DispatchResult = Pin<Box<dyn Future<Output = Result<(), AlertError>> + Send>>;
+
 pub trait AlertDispatcher: Send + Sync {
-    async fn dispatch(&self, alert: &Alert) -> Result<(), AlertError>;
+    fn dispatch(&self, alert: &Alert) -> DispatchResult;
 }
 
 pub struct ConsoleDispatcher;
 
-#[async_trait]
 impl AlertDispatcher for ConsoleDispatcher {
-    async fn dispatch(&self, alert: &Alert) -> Result<(), AlertError> {
-        tracing::info!(
-            alert_id = %alert.id,
-            severity = ?alert.severity,
-            rule = %alert.rule_name,
-            "ALERT: {}",
-            alert.description
-        );
-        Ok(())
+    fn dispatch(&self, alert: &Alert) -> DispatchResult {
+        let alert_id = alert.id.clone();
+        let severity = alert.severity;
+        let rule_name = alert.rule_name.clone();
+        let description = alert.description.clone();
+        Box::pin(async move {
+            tracing::info!(
+                alert_id = %alert_id,
+                severity = ?severity,
+                rule = %rule_name,
+                "ALERT: {}",
+                description
+            );
+            Ok(())
+        })
     }
 }
 
@@ -33,18 +40,22 @@ impl WebhookDispatcher {
     }
 }
 
-#[async_trait]
 impl AlertDispatcher for WebhookDispatcher {
-    async fn dispatch(&self, alert: &Alert) -> Result<(), AlertError> {
-        let resp = self.client.post(&self.url)
-            .json(alert)
-            .send()
-            .await
-            .map_err(|e| AlertError::DispatchError(e.to_string()))?;
-        if !resp.status().is_success() {
-            return Err(AlertError::DispatchError(format!("HTTP {}", resp.status())));
-        }
-        Ok(())
+    fn dispatch(&self, alert: &Alert) -> DispatchResult {
+        let url = self.url.clone();
+        let client = self.client.clone();
+        let alert_data = alert.clone();
+        Box::pin(async move {
+            let resp = client.post(&url)
+                .json(&alert_data)
+                .send()
+                .await
+                .map_err(|e| AlertError::DispatchError(e.to_string()))?;
+            if !resp.status().is_success() {
+                return Err(AlertError::DispatchError(format!("HTTP {}", resp.status())));
+            }
+            Ok(())
+        })
     }
 }
 
@@ -59,10 +70,14 @@ impl EmailDispatcher {
     }
 }
 
-#[async_trait]
 impl AlertDispatcher for EmailDispatcher {
-    async fn dispatch(&self, alert: &Alert) -> Result<(), AlertError> {
-        tracing::info!("EMAIL to {:?}: {:?} - {}", self.recipients, alert.severity, alert.description);
-        Ok(())
+    fn dispatch(&self, alert: &Alert) -> DispatchResult {
+        let recipients = self.recipients.clone();
+        let description = alert.description.clone();
+        let severity = alert.severity;
+        Box::pin(async move {
+            tracing::info!("EMAIL to {:?}: {:?} - {}", recipients, severity, description);
+            Ok(())
+        })
     }
 }
