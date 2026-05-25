@@ -1,0 +1,35 @@
+environment: staging
+log_level: debug
+port: 8080
+mcp:
+  host: 0.0.0.0
+  port: 8090
+  protocol_version: "2025-03-26"
+database:
+  duckdb_path: /data/gnss_staging.duckdb
+  lancedb_path: /data/lancedb_staging
+  redis_url: redis://staging-redis:6379
+quantum:
+  backend: aer
+  shots: 2048
+  circuit_depth: 3
+  use_gpu: false
+security:
+  jwt_secret: ${JWT_SECRET}
+  cors_origins:
+    - https://staging.gnss-detection.quantumworld.io
+  rate_limit: 500
+  rate_limit_window_secs: 60
+detection:
+  ensemble_threshold: 0.75
+  cn0_threshold: 28.0
+  doppler_max_drift: 4.0
+  min_constellations: 2
+  dedup_window_secs: 120
+notifications:
+  slack_webhook: ${SLACK_WEBHOOK_URL}
+  email_smtp: ""
+  email_from: staging@gnss-detection.quantumworld.io
+observability:
+  otel_endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+  log_format: json
