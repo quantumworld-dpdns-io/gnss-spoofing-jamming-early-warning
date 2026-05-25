@@ -60,7 +60,8 @@ class HybridQuantumClassicalAutoencoder:
     def quantum_transform(self, z: np.ndarray) -> np.ndarray:
         if self.quantum_weights is None:
             self._build_quantum_layer()
-        return z + 0.1 * np.sin(z @ self.quantum_weights[: self.latent_dim])
+        w = self.quantum_weights[:self.latent_dim * self.latent_dim].reshape(self.latent_dim, self.latent_dim)
+        return z + 0.1 * np.sin(z @ w)
 
     def forward(self, x: np.ndarray) -> np.ndarray:
         z = self.encode(x)
