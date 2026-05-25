@@ -4,7 +4,6 @@ pub mod vqc;
 pub mod qrng;
 pub mod integration;
 
-use gnss_parser::SignalObservation;
 use signal_processing::DetectionResult;
 
 pub trait QuantumDetector: Send + Sync {
