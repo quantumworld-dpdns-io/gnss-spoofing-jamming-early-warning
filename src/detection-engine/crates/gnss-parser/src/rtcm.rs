@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn test_rtcm_preamble_check() {
-        let mut data = vec![0xD3, 0x00, 0x03, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03];
+        let data = vec![0xD3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
         let (msg, size) = RtcmMessage::parse(&data).unwrap();
         assert_eq!(msg.message_type, 0);
         assert_eq!(size, 9);
