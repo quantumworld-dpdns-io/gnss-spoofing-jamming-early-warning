@@ -44,7 +44,7 @@ impl Alert {
     }
 
     pub fn dedup_key(&self) -> String {
-        format!("{}:{}", self.rule_name, self.context.location_id.unwrap_or_default())
+        format!("{}:{}", self.rule_name, self.context.location_id.clone().unwrap_or_default())
     }
 }
 
