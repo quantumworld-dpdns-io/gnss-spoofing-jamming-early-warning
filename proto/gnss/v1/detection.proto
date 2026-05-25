@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package gnss.v1;
+
+option go_package = "github.com/quantumworld-dpdns-io/gnss-spoofing-jamming-early-warning/proto/gnss/v1;gnssv1";
+
+service DetectionService {
+  rpc Detect(DetectRequest) returns (DetectResponse);
+  rpc StreamObservations(stream Observation) returns (stream DetectionResult);
+  rpc GetHeatmap(HeatmapRequest) returns (HeatmapResponse);
+  rpc ListAlerts(AlertListRequest) returns (AlertListResponse);
+}
+
+message Observation {
+  string source = 1;
+  uint32 prn = 2;
+  float snr_db_hz = 3;
+  double carrier_phase = 4;
+  double pseudorange = 5;
+  float doppler_shift = 6;
+  string timestamp = 7;
+  string constellation = 8;
+  double latitude = 9;
+  double longitude = 10;
+  float altitude = 11;
+}
+
+message DetectRequest {
+  repeated Observation observations = 1;
+  string detector_type = 2;
+  QuantumConfig quantum_config = 3;
+}
+
+message DetectResponse {
+  bool is_spoofed = 1;
+  float confidence = 2;
+  string detector_type = 3;
+  repeated string details = 4;
+  string timestamp = 5;
+  QuantumResult quantum_result = 6;
+}
+
+message QuantumConfig {
+  string backend = 1;
+  uint32 shots = 2;
+  uint32 circuit_depth = 3;
+  bool use_gpu = 4;
+}
+
+message QuantumResult {
+  float quantum_score = 1;
+  uint32 circuit_depth = 2;
+  uint32 n_qubits = 3;
+  string backend = 4;
+  string classification = 5;
+  float execution_time_ms = 6;
+}
+
+message HeatmapRequest {
+  double lat = 1;
+  double lon = 2;
+  double radius_km = 3;
+  int32 timeframe_hours = 4;
+  double resolution_degrees = 5;
+}
+
+message HeatmapResponse {
+  string risk_level = 1;
+  uint32 active_sensors = 2;
+  repeated HeatmapPoint grid_points = 3;
+  string generated_at = 4;
+}
+
+message HeatmapPoint {
+  double lat = 1;
+  double lon = 2;
+  float risk_score = 3;
+  uint32 observation_count = 4;
+}
+
+message AlertListRequest {
+  string severity = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  int32 timeframe_hours = 4;
+}
+
+message AlertListResponse {
+  repeated Alert alerts = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+}
+
+message Alert {
+  string id = 1;
+  string rule_name = 2;
+  string severity = 3;
+  string description = 4;
+  string timestamp = 5;
+  map<string, string> context = 6;
+  bool acknowledged = 7;
+}
+
+message DetectionResult {
+  bool is_spoofed = 1;
+  float confidence = 2;
+  string detector_type = 3;
+  repeated string details = 4;
+  string timestamp = 5;
+}
