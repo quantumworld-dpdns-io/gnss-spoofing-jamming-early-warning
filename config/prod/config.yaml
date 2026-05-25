@@ -1,0 +1,37 @@
+environment: production
+log_level: info
+port: 8080
+mcp:
+  host: 0.0.0.0
+  port: 8090
+  protocol_version: "2025-03-26"
+database:
+  duckdb_path: /data/gnss.duckdb
+  lancedb_path: /data/lancedb
+  redis_url: redis://redis-master:6379
+  iceberg_uri: http://iceberg-rest:8181
+  iceberg_warehouse: s3://gnss-prod-iceberg-warehouse
+quantum:
+  backend: aer
+  shots: 4096
+  circuit_depth: 4
+  use_gpu: true
+  ibm_instance: ibm-q/open/main
+security:
+  cors_origins:
+    - https://gnss-detection.quantumworld.io
+  rate_limit: 100
+  rate_limit_window_secs: 60
+detection:
+  ensemble_threshold: 0.8
+  cn0_threshold: 25.0
+  doppler_max_drift: 3.0
+  min_constellations: 3
+  dedup_window_secs: 60
+notifications:
+  slack_webhook: ${SLACK_WEBHOOK_URL}
+  email_smtp: ${EMAIL_SMTP_SERVER}
+  email_from: alerts@gnss-detection.quantumworld.io
+observability:
+  otel_endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+  log_format: json
