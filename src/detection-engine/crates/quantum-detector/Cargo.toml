@@ -13,3 +13,4 @@ tracing.workspace = true
 thiserror.workspace = true
 chrono.workspace = true
 ndarray = "0.16"
+rand = "0.8"
