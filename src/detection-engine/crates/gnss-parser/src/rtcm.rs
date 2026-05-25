@@ -17,7 +17,7 @@ impl RtcmMessage {
         if data[0] != RTCM_PREAMBLE {
             return Err(ParseError::UnknownMessageType("invalid preamble".into()));
         }
-        let reserved = (data[1] >> 6) & 0x03;
+        let _reserved = (data[1] >> 6) & 0x03;
         let length = ((data[1] as u16 & 0x3F) << 8) | data[2] as u16;
         let total_words = length + 3;
         let total_bytes = total_words as usize * 3;

@@ -84,13 +84,13 @@ impl Detector for CrossConstellationDetector {
             observations.iter().map(|o| o.constellation.clone()).collect();
         let unique_sources = constellations.len();
         let is_spoofed = unique_sources < 2;
-        DetectionResult {
+        vec![DetectionResult {
             is_spoofed,
             confidence: if is_spoofed { 0.75 } else { 0.25 },
             detector_type: self.detector_type(),
             details: vec![format!("Constellations visible: {} (need >= 2)", unique_sources)],
             timestamp: chrono::Utc::now().naive_utc(),
-        }.into_iter().collect()
+        }]
     }
 }
 
