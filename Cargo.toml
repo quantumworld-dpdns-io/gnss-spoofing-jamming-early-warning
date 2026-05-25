@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = [
+    "src/detection-engine/crates/gnss-parser",
+    "src/detection-engine/crates/signal-processing",
+    "src/detection-engine/crates/quantum-detector",
+    "src/detection-engine/crates/alert-engine",
+    "src/mcp-server",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/quantumworld-dpdns-io/gnss-spoofing-jamming-early-warning"
+
+[workspace.dependencies]
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+anyhow = "1"
+thiserror = "2"
+clap = { version = "4", features = ["derive"] }
+reqwest = { version = "0.12", features = ["json"] }
+prost = "0.13"
+tonic = "0.12"
+async-trait = "0.1"
+futures = "0.3"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+bytes = "1"
+parking_lot = "0.12"
+dashmap = "6"
+criterion = { version = "0.5", features = ["html_reports"] }
