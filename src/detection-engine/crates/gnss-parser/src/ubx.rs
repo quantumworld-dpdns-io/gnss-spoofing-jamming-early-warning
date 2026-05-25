@@ -113,7 +113,10 @@ mod tests {
 
     #[test]
     fn test_ubx_sync_check() {
-        let data = vec![0xB5, 0x62, 0x01, 0x02, 0x00, 0x00, 0x03, 0x05];
+        let payload: [u8; 0] = [];
+        let ck_a: u8 = payload.iter().fold(0x01u8.wrapping_add(0x02), |a, &b| a.wrapping_add(b));
+        let ck_b: u8 = payload.iter().fold(ck_a, |a, &b| a.wrapping_add(b));
+        let mut data = vec![0xB5, 0x62, 0x01, 0x02, 0x00, 0x00, ck_a, ck_b];
         let (frame, size) = UbxFrame::parse(&data).unwrap();
         assert_eq!(frame.class, 0x01);
         assert_eq!(frame.id, 0x02);
