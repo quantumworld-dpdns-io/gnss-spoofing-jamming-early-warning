@@ -1,0 +1,23 @@
+apiVersion: v2
+name: gnss-detection
+description: GNSS Spoofing/Jamming Early Warning System
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+home: https://github.com/quantumworld-dpdns-io/gnss-spoofing-jamming-early-warning
+sources:
+  - https://github.com/quantumworld-dpdns-io/gnss-spoofing-jamming-early-warning
+keywords:
+  - gnss
+  - spoofing
+  - jamming
+  - detection
+  - quantum
+maintainers:
+  - name: quantumworld-dpdns-io
+    email: admin@quantumworld.io
+dependencies:
+  - name: redis
+    version: ~20.0
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled

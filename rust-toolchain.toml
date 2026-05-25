@@ -1,0 +1,5 @@
+[toolchain]
+channel = "stable"
+targets = ["aarch64-apple-darwin", "x86_64-unknown-linux-gnu", "wasm32-wasip1"]
+components = ["rustfmt", "clippy", "rust-analyzer"]
+profile = "default"

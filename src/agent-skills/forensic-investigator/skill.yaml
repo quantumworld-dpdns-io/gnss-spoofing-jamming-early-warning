@@ -1,0 +1,40 @@
+name: forensic-investigator
+version: 0.1.0
+description: >
+  Post-incident forensic analysis of spoofing events.
+  Correlates signal data, alerts, and quantum detection results
+  to determine attack vector and impact.
+
+tools:
+  - gnss_get_heatmap
+  - gnss_get_alerts
+  - gnss_query_history
+  - quantum_replay_detection
+
+triggers:
+  - event: incident.resolved
+    action: perform_forensic_analysis
+  - event: report.requested
+    action: generate_incident_report
+
+workflow:
+  - step: collect_telemetry
+    timeframe: 24h
+  - step: reconstruct_attack_timeline
+  - step: quantum_replay
+  - step: impact_assessment
+  - step: generate_report
+
+output:
+  format: markdown
+  sections:
+    - timeline
+    - affected_sensors
+    - quantum_analysis
+    - recommended_actions
+
+permissions:
+  - read:observations
+  - read:alerts
+  - read:quantum_results
+  - read:history

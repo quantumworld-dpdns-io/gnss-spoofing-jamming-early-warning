@@ -1,0 +1,12 @@
+Package: gnss-detection
+Version: 0.1.0
+Section: science
+Priority: optional
+Architecture: amd64
+Depends: libc6 (>= 2.31), python3 (>= 3.12), libssl3 (>= 3.0)
+Maintainer: quantumworld-dpdns-io <admin@quantumworld.io>
+Description: GNSS Spoofing/Jamming Early Warning System
+ Distributed detection network aggregating GNSS signals
+ to generate spoofing heatmaps using classical and
+ quantum-enhanced detection algorithms.
+Homepage: https://github.com/quantumworld-dpdns-io/gnss-spoofing-jamming-early-warning

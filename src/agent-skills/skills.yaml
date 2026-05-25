@@ -1,0 +1,23 @@
+skills:
+  - name: gnss-analyst
+    path: ./gnss-analyst/skill.yaml
+    enabled: true
+    priority: 10
+  - name: quantum-verifier
+    path: ./quantum-verifier/skill.yaml
+    enabled: true
+    priority: 20
+  - name: alert-dispatcher
+    path: ./alert-dispatcher/skill.yaml
+    enabled: true
+    priority: 30
+  - name: forensic-investigator
+    path: ./forensic-investigator/skill.yaml
+    enabled: true
+    priority: 40
+
+orchestration:
+  default_agent: gnss-analyst
+  max_concurrent_agents: 5
+  agent_timeout_seconds: 60
+  fallback_strategy: cascade

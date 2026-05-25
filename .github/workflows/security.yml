@@ -1,0 +1,62 @@
+name: Security Scanning
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 06:00
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  code-scanning:
+    name: CodeQL & Semgrep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: python, go, javascript
+      - uses: github/codeql-action/analyze@v3
+      - uses: semgrep/semgrep-action@v1
+        with:
+          config: p/default
+
+  dependency-scanning:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Cargo audit
+        run: |
+          cargo install cargo-audit
+          cargo audit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Safety check
+        run: |
+          pip install safety
+          safety check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: npm audit
+        run: npm audit --audit-level=high
+
+  container-scanning:
+    name: Container Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t gnss-detection:test -f deploy/docker/Dockerfile .
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: gnss-detection:test
+          severity: HIGH,CRITICAL
+      - name: Dockle lint
+        uses: erzz/dockle-action@v1
+        with:
+          image: gnss-detection:test

@@ -1,0 +1,125 @@
+replicaCount: 3
+environment: production
+
+image:
+  repository: ghcr.io/quantumworld-dpdns-io/gnss-detection
+  tag: latest
+  pullPolicy: Always
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext:
+  fsGroup: 1000
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 8080
+  mcpPort: 8090
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: gnss-detection.quantumworld.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: gnss-detection-tls
+      hosts:
+        - gnss-detection.quantumworld.io
+
+resources:
+  limits:
+    cpu: 2
+    memory: 4Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - gnss-detection
+          topologyKey: kubernetes.io/hostname
+
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: true
+  master:
+    persistence:
+      size: 8Gi
+
+quantum:
+  enabled: false
+  gpuNodeSelector:
+    eks.amazonaws.com/nodegroup: quantum
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+
+config:
+  environment: production
+  logLevel: info
+  rateLimit: 1000
+  quantumBackend: aer
+  quantumShots: 4096
+
+monitoring:
+  enabled: true
+  podMonitor:
+    enabled: true
+    interval: 30s
+  prometheusRules:
+    enabled: true
+    rules:
+      - alert: HighSpoofingConfidence
+        expr: gnss_detection_confidence > 0.9
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High spoofing confidence detected"
+
+tests:
+  enabled: true
+  robot:
+    enabled: true
+    schedule: "0 */6 * * *"

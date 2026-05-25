@@ -1,0 +1,66 @@
+name: Quantum CI
+on:
+  push:
+    paths:
+      - 'src/detection-engine/python/quantum/**'
+      - 'src/detection-engine/crates/quantum-detector/**'
+  pull_request:
+    paths:
+      - 'src/detection-engine/python/quantum/**'
+      - 'src/detection-engine/crates/quantum-detector/**'
+
+jobs:
+  quantum-test:
+    name: Quantum Circuit Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install quantum stack
+        run: |
+          pip install numpy scipy qiskit qiskit-machine-learning \
+            qiskit-ibm-runtime pennylane matplotlib
+      - name: Run quantum autoencoder tests
+        run: |
+          python3 src/detection-engine/python/quantum/autoencoder.py
+      - name: Run VQC tests
+        run: |
+          python3 src/detection-engine/python/quantum/vqc.py
+      - name: Run circuit tests
+        run: |
+          python3 src/detection-engine/python/quantum/circuits.py
+      - name: Run QRNG tests
+        run: |
+          python3 src/detection-engine/python/quantum/qrng.py
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Run Rust quantum detector tests
+        run: cargo test -p quantum-detector --release
+
+  quantum-benchmark:
+    name: Quantum Benchmark (Classical vs Quantum)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install numpy scipy qiskit matplotlib scikit-learn
+      - name: Benchmark quantum vs classical
+        run: |
+          python3 -c "
+          import numpy as np, time
+          from quantum.autoencoder import HqcaDetector
+          rng = np.random.default_rng(42)
+          x_clean = rng.standard_normal((500, 8))
+          detector = HqcaDetector(threshold=0.5)
+          t0 = time.time()
+          detector.fit(x_clean)
+          x_test = rng.standard_normal((100, 8)) * 2.0
+          preds, errors = detector.detect(x_test)
+          t1 = time.time()
+          print(f'Quantum inference: {(t1-t0)/len(x_test)*1000:.2f}ms per sample')
+          print(f'Detection rate: {preds.mean():.3f}')
+          "

@@ -1,0 +1,33 @@
+[project]
+name = "gnss-detection-python"
+version = "0.1.0"
+description = "GNSS Spoofing/Jamming Early Warning - Python packages"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.14",
+    "pydantic>=2.0",
+    "fastapi>=0.115",
+    "structlog>=24.4",
+    "duckdb>=1.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.24", "pytest-cov>=5.0", "ruff>=0.8", "mypy>=1.13"]
+quantum = ["qiskit>=1.2", "qiskit-machine-learning>=0.8", "pennylane>=0.40"]
+test = ["robotframework>=7.1", "robotframework-requestslibrary>=0.9"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["../../../tests"]
+pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["quantum*", "gnss_core*"]
+namespaces = false
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"

@@ -1,0 +1,36 @@
+environment: development
+log_level: debug
+port: 8080
+mcp:
+  host: 127.0.0.1
+  port: 8090
+  protocol_version: "2025-03-26"
+database:
+  duckdb_path: /tmp/gnss_dev.duckdb
+  lancedb_path: /tmp/gnss_dev_lance
+  redis_url: redis://localhost:6379/0
+quantum:
+  backend: aer
+  shots: 1024
+  circuit_depth: 2
+  use_gpu: false
+security:
+  jwt_secret: dev-secret-key-not-for-production
+  cors_origins:
+    - http://localhost:3000
+    - http://localhost:8080
+  rate_limit: 1000
+  rate_limit_window_secs: 60
+detection:
+  ensemble_threshold: 0.7
+  cn0_threshold: 30.0
+  doppler_max_drift: 5.0
+  min_constellations: 2
+  dedup_window_secs: 300
+notifications:
+  slack_webhook: ""
+  email_smtp: ""
+  email_from: dev@gnss-detection.local
+observability:
+  otel_endpoint: http://localhost:4318
+  log_format: pretty
