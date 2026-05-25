@@ -105,7 +105,7 @@ mod tests {
         engine.add_dispatcher(Box::new(TestDispatcher { called: called.clone() }));
         engine.add_rule(AlertRule::new(
             "test".into(), Severity::Warning, "test rule".into(),
-            |ctx: &AlertContext| ctx.score > 0.5,
+            Box::new(|ctx: &AlertContext| ctx.score > 0.5),
         ));
         let ctx = AlertContext { score: 0.8, ..Default::default() };
         let alerts = engine.evaluate(&ctx).await;
