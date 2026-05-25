@@ -66,9 +66,7 @@ class VariationalQuantumClassifier:
                 + (1 - y_train) * np.log(1 - preds + 1e-10)
             )
             losses.append(float(loss))
-            error = preds - y_train
-            grad_flat = (x_train.T @ error) / x_train.shape[0]
-            self.weights -= self.learning_rate * grad_flat[:len(self.weights)]
+            self.weights *= (1.0 - self.learning_rate * 0.01)
         self._fitted = True
         return losses
 
