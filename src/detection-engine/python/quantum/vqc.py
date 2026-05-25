@@ -44,7 +44,7 @@ class VariationalQuantumClassifier:
         x_enc = self._encode(x)
         for layer in range(self.n_layers):
             x_enc = self._variational_layer(x_enc, layer)
-        return 1.0 / (1.0 + np.exp(-x_enc.sum(axis=1)))
+        return 1.0 / (1.0 + np.exp(-x_enc.mean(axis=1)))
 
     def predict(self, x: np.ndarray) -> np.ndarray:
         probs = self.forward(x)
