@@ -1,0 +1,34 @@
+name: quantum-verifier
+version: 0.1.0
+description: >
+  Executes quantum circuits for spoofing verification using
+  HQC-AE and VQC algorithms. Manages quantum backend selection.
+
+tools:
+  - gnss_verify_quantum
+  - quantum_train_model
+  - quantum_validate_circuit
+
+triggers:
+  - event: detection.confidence_borderline
+    action: run_quantum_verification
+  - event: model.degraded
+    action: retrain_quantum_model
+
+backends:
+  primary: aer
+  secondary: ibm
+  gpu: cudaq
+
+config:
+  default_shots: 4096
+  default_circuit_depth: 4
+  max_circuit_width: 8
+  fallback_on_timeout: true
+  timeout_ms: 30000
+
+permissions:
+  - read:quantum_config
+  - read:features
+  - write:quantum_results
+  - execute:quantum_circuits
