@@ -1,0 +1,35 @@
+name: gnss-analyst
+version: 0.1.0
+description: >
+  Analyzes GNSS signal observations for spoofing/jamming indicators.
+  Combines classical detection algorithms with quantum-enhanced verification.
+
+tools:
+  - gnss_detect_spoofing
+  - gnss_get_heatmap
+  - gnss_verify_quantum
+
+triggers:
+  - event: observation.received
+    action: analyze_observations
+  - event: alert.generated
+    action: investigate_alert
+  - event: quantum.result.ready
+    action: incorporate_quantum_result
+
+workflow:
+  - step: collect_observations
+    timeout: 5s
+  - step: classical_detection
+    timeout: 1s
+  - step: quantum_verification
+    if: confidence > 0.5
+    timeout: 30s
+  - step: aggregate_results
+  - step: generate_report
+
+permissions:
+  - read:observations
+  - read:alerts
+  - write:reports
+  - execute:quantum_circuits
