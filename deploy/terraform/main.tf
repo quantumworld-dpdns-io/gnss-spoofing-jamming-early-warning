@@ -23,6 +23,12 @@ terraform {
 provider "aws" {
   region = var.region
 
+  # `aws login` session files are not read by the provider; Ansible exports env vars.
+  # Skip IMDS so a laptop does not wait on EC2 metadata.
+  skip_metadata_api_check     = true
+  skip_region_validation      = false
+  skip_credentials_validation = false
+
   default_tags {
     tags = local.common_tags
   }
@@ -57,26 +63,26 @@ data "archive_file" "ingest" {
 module "budget" {
   source = "./modules/budget"
 
-  name         = "${local.name_prefix}-zero-cost"
-  limit_usd    = var.budget_limit_usd
+  name        = "${local.name_prefix}-zero-cost"
+  limit_usd   = var.budget_limit_usd
   alert_email = var.alert_email
 }
 
 module "dynamodb" {
   source = "./modules/dynamodb"
 
-  name_prefix     = local.name_prefix
-  read_capacity   = var.dynamodb_read_capacity
-  write_capacity  = var.dynamodb_write_capacity
+  name_prefix    = local.name_prefix
+  read_capacity  = var.dynamodb_read_capacity
+  write_capacity = var.dynamodb_write_capacity
 }
 
 module "s3_lake" {
   source = "./modules/s3_lake"
 
-  name_prefix           = local.name_prefix
-  account_id            = var.aws_account_id
-  expiration_days       = var.log_expiration_days
-  enable_glacier_demo   = var.enable_glacier_demo
+  name_prefix         = local.name_prefix
+  account_id          = var.aws_account_id
+  expiration_days     = var.log_expiration_days
+  enable_glacier_demo = var.enable_glacier_demo
 }
 
 module "messaging" {

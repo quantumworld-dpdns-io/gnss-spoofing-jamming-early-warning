@@ -132,12 +132,12 @@ resource "aws_lambda_function" "ingest" {
 
   environment {
     variables = {
-      EVENTS_TABLE    = var.events_table
-      CONFIG_TABLE    = var.config_table
-      LAKE_BUCKET     = var.lake_bucket
-      SNS_TOPIC_ARN   = var.sns_topic_arn
-      SQS_QUEUE_URL   = var.sqs_queue_url
-      INGEST_SECRET   = var.ingest_secret
+      EVENTS_TABLE  = var.events_table
+      CONFIG_TABLE  = var.config_table
+      LAKE_BUCKET   = var.lake_bucket
+      SNS_TOPIC_ARN = var.sns_topic_arn
+      SQS_QUEUE_URL = var.sqs_queue_url
+      INGEST_SECRET = var.ingest_secret
     }
   }
 

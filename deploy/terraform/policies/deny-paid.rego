@@ -1,5 +1,7 @@
 package main
 
+import rego.v1
+
 paid_types := {
 	"aws_eks_cluster",
 	"aws_eks_node_group",
@@ -25,57 +27,51 @@ paid_types := {
 	"google_redis_instance",
 }
 
-deny[msg] {
-	rc := input.resource_changes[_]
+deny contains msg if {
+	some rc in input.resource_changes
 	paid_types[rc.type]
 	not deleting(rc)
 	msg := sprintf("zero-cost policy: %s (%s) is not allowed in the default stack", [rc.address, rc.type])
 }
 
-deny[msg] {
-	rc := input.resource_changes[_]
+deny contains msg if {
+	some rc in input.resource_changes
 	rc.type == "aws_dynamodb_table"
 	rc.change.after.billing_mode == "PAY_PER_REQUEST"
 	msg := sprintf("DynamoDB on-demand is not Always Free: %s", [rc.address])
 }
 
-deny[msg] {
-	rc := input.resource_changes[_]
+deny contains msg if {
+	some rc in input.resource_changes
 	rc.type == "aws_lambda_function"
 	mem := object.get(rc.change.after, "memory_size", 128)
 	mem > 256
 	msg := sprintf("Lambda memory %v > 256MB: %s", [mem, rc.address])
 }
 
-deny[msg] {
-	rc := input.resource_changes[_]
+deny contains msg if {
+	some rc in input.resource_changes
 	rc.type == "google_cloud_run_v2_service"
 	cloud_run_min(rc) > 0
 	msg := sprintf("Cloud Run min_instance_count must be 0: %s", [rc.address])
 }
 
-deny[msg] {
+deny contains msg if {
 	count(budget_resources) == 0
 	count(input.resource_changes) > 0
 	msg := "zero-cost policy: plan must include aws_budgets_budget or google_billing_budget"
 }
 
-budget_resources[rc] {
-	rc := input.resource_changes[_]
-	rc.type == "aws_budgets_budget"
+budget_resources contains rc if {
+	some rc in input.resource_changes
+	rc.type in {"aws_budgets_budget", "google_billing_budget"}
 	not deleting(rc)
 }
 
-budget_resources[rc] {
-	rc := input.resource_changes[_]
-	rc.type == "google_billing_budget"
-	not deleting(rc)
-}
-
-deleting(rc) {
+deleting(rc) if {
 	rc.change.actions == ["delete"]
 }
 
-cloud_run_min(rc) = n {
+cloud_run_min(rc) := n if {
 	n := rc.change.after.template[0].scaling[0].min_instance_count
-} else = 0
+} else := 0

@@ -7,9 +7,10 @@ resource "aws_sns_topic" "alerts" {
 }
 
 resource "aws_sqs_queue" "alerts" {
-  name                      = "${var.name_prefix}-alerts"
-  message_retention_seconds = 86400
+  name                       = "${var.name_prefix}-alerts"
+  message_retention_seconds  = 86400
   visibility_timeout_seconds = 30
+  sqs_managed_sse_enabled    = true
 }
 
 resource "aws_sns_topic_subscription" "sqs" {

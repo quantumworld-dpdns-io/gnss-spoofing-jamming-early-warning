@@ -43,7 +43,7 @@ resource "aws_glue_catalog_table" "events" {
   table_type    = "EXTERNAL_TABLE"
 
   parameters = {
-    EXTERNAL            = "TRUE"
+    EXTERNAL             = "TRUE"
     "projection.enabled" = "false"
   }
 

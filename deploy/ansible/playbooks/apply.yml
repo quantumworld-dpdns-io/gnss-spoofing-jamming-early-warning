@@ -1,9 +1,12 @@
 ---
+- import_playbook: preflight.yml
+
 - name: Local terraform apply (never from CI)
   hosts: localhost
   gather_facts: false
   vars:
     confirm: false
+    tf_bin: "{{ playbook_dir }}/../../scripts/tf-with-aws-login.sh"
   tasks:
     - name: Require explicit confirm=true
       ansible.builtin.assert:
@@ -11,32 +14,41 @@
           - confirm | bool
         fail_msg: "Refusing to apply. Re-run with -e confirm=true after reviewing the plan."
 
-    - name: Import preflight
-      ansible.builtin.command: ansible-playbook "{{ playbook_dir }}/preflight.yml"
-      changed_when: false
-
     - name: Terraform init (local state)
-      ansible.builtin.command: terraform init -backend=false -input=false
+      ansible.builtin.command:
+        argv:
+          - "{{ tf_bin }}"
+          - init
+          - -backend=false
+          - -input=false
       args:
         chdir: "{{ terraform_dir }}"
 
     - name: Terraform plan
-      ansible.builtin.command: >
-        terraform plan -input=false
-        -var-file={{ tfvars_file }}
-        -out=tfplan
+      ansible.builtin.command:
+        argv:
+          - "{{ tf_bin }}"
+          - plan
+          - -input=false
+          - "-var-file={{ tfvars_file }}"
+          - -out=tfplan
       args:
         chdir: "{{ terraform_dir }}"
 
     - name: Policy test on plan JSON
       ansible.builtin.shell: |
-        terraform show -json tfplan > tfplan.json
+        "{{ tf_bin }}" show -json tfplan > tfplan.json
         conftest test tfplan.json -p policies
       args:
         chdir: "{{ terraform_dir }}"
       changed_when: false
 
     - name: Terraform apply
-      ansible.builtin.command: terraform apply -input=false tfplan
+      ansible.builtin.command:
+        argv:
+          - "{{ tf_bin }}"
+          - apply
+          - -input=false
+          - tfplan
       args:
         chdir: "{{ terraform_dir }}"

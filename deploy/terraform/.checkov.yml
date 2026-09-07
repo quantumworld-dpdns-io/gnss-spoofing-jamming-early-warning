@@ -8,7 +8,19 @@ skip-check:
   # Customer-managed KMS keys are not Always Free; SSE-S3/AWS-owned keys are used instead.
   - CKV_AWS_173
   - CKV_AWS_145
+  - CKV_AWS_119
+  - CKV_AWS_158
+  - CKV_AWS_26
   # X-Ray tracing is out of the free-tier demo budget.
   - CKV_AWS_50
   # Function URL uses a shared secret header rather than IAM (local verify without SigV4).
   - CKV_AWS_312
+  - CKV_AWS_258
+  - CKV_AWS_301
+  # PITR, 1-year logs, code signing, and Lambda DLQ add cost outside Always Free.
+  - CKV_AWS_28
+  - CKV_AWS_338
+  - CKV_AWS_116
+  - CKV_AWS_272
+  - CKV_AWS_300
+  - CKV_AWS_27

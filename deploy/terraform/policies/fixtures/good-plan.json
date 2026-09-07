@@ -3,7 +3,7 @@
     {
       "address": "module.budget.aws_budgets_budget.zero_cost",
       "type": "aws_budgets_budget",
-      "change": { "actions": ["create"], "after": { "limit_amount": "0.0" } }
+      "change": { "actions": ["create"], "after": { "limit_amount": "0.01" } }
     },
     {
       "address": "module.dynamodb.aws_dynamodb_table.events",

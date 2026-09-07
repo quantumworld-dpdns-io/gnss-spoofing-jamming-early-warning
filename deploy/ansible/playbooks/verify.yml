@@ -9,6 +9,23 @@
         chdir: "{{ terraform_dir }}"
       register: tf_out
       changed_when: false
+      failed_when: false
+
+    - name: Require completed apply
+      ansible.builtin.assert:
+        that:
+          - tf_out.rc == 0
+          - "'function_url' in (tf_out.stdout | from_json)"
+        fail_msg: |
+          Apply did not finish; terraform has no function_url output.
+          Do not verify a half-created stack.
+
+          If the last apply failed with a service control policy:
+            1. Stay on that login and run: make infra-destroy-aws
+            2. aws login  (pick management account 710969344403)
+            3. aws sts get-caller-identity
+            4. make infra-apply-aws
+            5. make infra-verify-aws
 
     - name: Parse outputs
       ansible.builtin.set_fact:

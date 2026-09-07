@@ -5,26 +5,33 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 POLICY="$ROOT/deploy/terraform/policies"
 TF_DIR="$ROOT/deploy/terraform"
+missing=0
 
 if ! command -v conftest >/dev/null 2>&1; then
-  echo "conftest not installed; skipping OPA fixtures (install: https://www.conftest.dev/)" >&2
-else
-  conftest test "$POLICY/fixtures/good-plan.json" -p "$POLICY"
-  if conftest test "$POLICY/fixtures/bad-plan.json" -p "$POLICY"; then
-    echo "expected deny-paid to fail on fixtures/bad-plan.json" >&2
-    exit 1
-  fi
-  echo "conftest fixtures: good accepted, bad denied"
+  echo "conftest missing. From this repo run:  make bootstrap" >&2
+  missing=1
 fi
+if ! command -v terraform >/dev/null 2>&1; then
+  echo "terraform missing. From this repo run:  make bootstrap" >&2
+  missing=1
+fi
+if [[ "$missing" -eq 1 ]]; then
+  exit 1
+fi
+
+conftest test "$POLICY/fixtures/good-plan.json" -p "$POLICY"
+if conftest test "$POLICY/fixtures/bad-plan.json" -p "$POLICY" >/tmp/conftest-bad-plan.out 2>&1; then
+  echo "expected deny-paid to fail on fixtures/bad-plan.json" >&2
+  cat /tmp/conftest-bad-plan.out >&2
+  exit 1
+fi
+echo "conftest fixtures: good plan accepted, paid-stack fixture correctly denied"
 
 if command -v checkov >/dev/null 2>&1; then
   checkov -d "$TF_DIR" --config-file "$TF_DIR/.checkov.yml" --quiet || true
 fi
 
-if command -v terraform >/dev/null 2>&1; then
-  terraform -chdir="$TF_DIR" init -backend=false -input=false >/dev/null
-  terraform -chdir="$TF_DIR" validate
-  terraform -chdir="$TF_DIR" fmt -check -recursive
-else
-  echo "terraform not installed; skipped validate" >&2
-fi
+terraform -chdir="$TF_DIR" init -backend=false -input=false >/dev/null
+terraform -chdir="$TF_DIR" validate
+terraform -chdir="$TF_DIR" fmt -check -recursive
+echo "terraform validate + fmt: ok"

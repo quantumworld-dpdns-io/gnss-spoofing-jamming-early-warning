@@ -32,7 +32,7 @@ resource "aws_budgets_budget" "zero_cost" {
     use_blended                = false
   }
 
-  # $0.0 budget: alert on any actual or forecasted spend above zero.
+  # AWS rejects limit_amount 0. Use 0.01 and alert when actual/forecast spend > $0.
   notification {
     comparison_operator        = "GREATER_THAN"
     threshold                  = 0

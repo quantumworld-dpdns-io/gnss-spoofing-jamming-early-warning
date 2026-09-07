@@ -22,14 +22,19 @@ variable "aws_account_id" {
 }
 
 variable "alert_email" {
-  description = "Email for AWS Budget $0.00 alerts (any spend above zero)"
+  description = "Email for AWS Budget alerts (fires when actual or forecasted spend exceeds $0)"
   type        = string
 }
 
 variable "budget_limit_usd" {
-  description = "Monthly AWS Budget limit in USD (zero-cost default is 0.0)"
+  description = "Monthly AWS Budget limit in USD. API rejects 0; 0.01 is the practical zero-cost floor."
   type        = string
-  default     = "0.0"
+  default     = "0.01"
+
+  validation {
+    condition     = tonumber(var.budget_limit_usd) > 0
+    error_message = "AWS Budgets requires limit_amount > 0. Use 0.01; notifications still fire at $0 actual spend."
+  }
 }
 
 variable "ingest_shared_secret" {

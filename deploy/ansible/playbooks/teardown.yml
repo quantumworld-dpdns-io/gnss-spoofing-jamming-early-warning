@@ -4,6 +4,7 @@
   gather_facts: false
   vars:
     confirm: false
+    tf_bin: "{{ playbook_dir }}/../../scripts/tf-with-aws-login.sh"
   tasks:
     - name: Require confirm=true
       ansible.builtin.assert:
@@ -12,8 +13,12 @@
         fail_msg: "Refusing destroy without -e confirm=true"
 
     - name: Terraform destroy
-      ansible.builtin.command: >
-        terraform destroy -input=false -auto-approve
-        -var-file={{ tfvars_file }}
+      ansible.builtin.command:
+        argv:
+          - "{{ tf_bin }}"
+          - destroy
+          - -input=false
+          - -auto-approve
+          - "-var-file={{ tfvars_file }}"
       args:
         chdir: "{{ terraform_dir }}"

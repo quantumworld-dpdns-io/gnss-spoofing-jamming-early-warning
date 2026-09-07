@@ -13,7 +13,10 @@
         install-hooks \
         run-mcp-server run-api-gateway run-detection-engine \
         package-deb package-rpm package-homebrew package-docker \
-        infra-plan infra-apply infra-verify infra-destroy cost-guard
+        infra-plan infra-apply infra-verify infra-destroy cost-guard bootstrap \
+        infra-plan-aws infra-apply-aws infra-verify-aws infra-destroy-aws cost-guard-aws \
+        infra-plan-gcp infra-apply-gcp infra-verify-gcp infra-destroy-gcp cost-guard-gcp \
+        aws-whoami aws-clear-invalid-keys
 
 # ─── Build ────────────────────────────────────────────────
 SHELL := /bin/bash
@@ -201,6 +204,11 @@ package-homebrew:
 package-docker: docker-build
 
 # ─── Zero-cost infra (local apply only) ────────────────────
+SZTAB := ../satellite-zero-trust-access-broker
+
+bootstrap:
+	bash deploy/scripts/bootstrap-tools.sh
+
 cost-guard:
 	bash deploy/scripts/cost-guard.sh
 
@@ -215,6 +223,29 @@ infra-verify:
 
 infra-destroy:
 	cd deploy/ansible && ansible-playbook playbooks/teardown.yml -e confirm=true
+
+# Aliases so wrapper names work from inside this repo too
+cost-guard-aws: cost-guard
+infra-plan-aws: infra-plan
+infra-apply-aws: infra-apply
+infra-verify-aws: infra-verify
+infra-destroy-aws: infra-destroy
+cost-guard-gcp:
+	$(MAKE) -C $(SZTAB) cost-guard
+
+aws-whoami:
+	aws sts get-caller-identity
+
+aws-clear-invalid-keys:
+	bash deploy/scripts/aws-clear-invalid-keys.sh
+infra-plan-gcp:
+	$(MAKE) -C $(SZTAB) infra-plan
+infra-apply-gcp:
+	$(MAKE) -C $(SZTAB) infra-apply
+infra-verify-gcp:
+	$(MAKE) -C $(SZTAB) infra-verify
+infra-destroy-gcp:
+	$(MAKE) -C $(SZTAB) infra-destroy
 
 # ─── Help ──────────────────────────────────────────────────
 help:
@@ -235,6 +266,8 @@ help:
 	@echo "install-hooks      - Install git hooks"
 	@echo "package-deb        - Build Debian package"
 	@echo "cost-guard         - OPA deny-paid fixtures + terraform validate"
+	@echo "bootstrap          - brew install terraform conftest ansible"
 	@echo "infra-plan         - Ansible preflight (no apply)"
 	@echo "infra-apply        - Local terraform apply (never CI)"
+	@echo "infra-apply-aws    - same as infra-apply (this repo)"
 	@echo "infra-destroy      - Local terraform destroy"

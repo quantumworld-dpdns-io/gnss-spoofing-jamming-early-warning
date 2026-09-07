@@ -2,22 +2,92 @@
 - name: Zero-cost preflight (AWS)
   hosts: localhost
   gather_facts: false
-  vars:
-    confirm: false
   tasks:
+    - name: aws CLI present
+      ansible.builtin.command: which aws
+      register: which_aws
+      changed_when: false
+      failed_when: which_aws.rc != 0
+      ignore_errors: true
+
+    - name: Require aws CLI
+      ansible.builtin.assert:
+        that:
+          - which_aws.rc == 0
+        fail_msg: |
+          aws CLI is not installed.
+          Run: make bootstrap
+          or: brew install awscli
+
     - name: AWS identity
       ansible.builtin.command: aws sts get-caller-identity --output json
       register: aws_ident
       changed_when: false
+      failed_when: false
+
+    - name: Require AWS credentials
+      ansible.builtin.assert:
+        that:
+          - aws_ident.rc == 0
+        fail_msg: |
+          STS failed (rc={{ aws_ident.rc }}):
+          {{ aws_ident.stderr | default(aws_ident.stdout) }}
+
+          aws_account_id in terraform.tfvars is the 12-digit account number (already set).
+          It is NOT an Access Key. Access Key IDs start with AKIA or ASIA.
+
+          Do not put the account id or the word none into aws configure.
+
+          Browser login (AWS CLI 2.36+, no long-lived keys):
+            aws login
+            aws sts get-caller-identity
+
+          Or IAM user keys from IAM console, Create access key:
+            aws configure
+            (Access Key ID = AKIA..., Secret = the secret string, region = us-east-1)
+
+          Then: make infra-apply-aws
 
     - name: Parse account id
       ansible.builtin.set_fact:
         aws_account_id: "{{ (aws_ident.stdout | from_json).Account }}"
 
+    - name: Read terraform.tfvars
+      ansible.builtin.slurp:
+        src: "{{ tfvars_file }}"
+      register: tfvars_slurp
+
+    - name: Expected account from tfvars
+      ansible.builtin.set_fact:
+        expected_account_id: "{{ (tfvars_slurp.content | b64decode).splitlines() | select('match', '^aws_account_id') | first | regex_replace('^aws_account_id\\s*=\\s*\"([0-9]{12})\".*$', '\\1') }}"
+
+    - name: Require session matches terraform.tfvars
+      ansible.builtin.assert:
+        that:
+          - aws_account_id | string == expected_account_id | string
+        fail_msg: |
+          Logged in as {{ aws_account_id }}, terraform.tfvars expects {{ expected_account_id }}.
+
+          "My First Project" is this member account (711553772978). It is locked by
+          Organizations SCP p-it6bm8je from 710969344403 (no S3/DynamoDB/SNS/SQS/Glue).
+
+          That screen will not list 710969344403 unless you add another session:
+            1. aws login
+            2. Click Add session (do not reuse My First Project)
+            3. Sign in with the email/password of the management account 710969344403
+            4. Select that new session
+            5. aws sts get-caller-identity
+               Account must be {{ expected_account_id }}
+            6. make infra-apply-aws
+
+          If you do not have login for 710969344403, an org admin must either
+          grant you that account or relax SCP p-it6bm8je on 711553772978.
+          Do not run make infra-verify-aws until apply succeeds.
+
     - name: Run cost-guard (fixtures + terraform validate)
       ansible.builtin.command: "{{ playbook_dir }}/../../scripts/cost-guard.sh"
       changed_when: false
 
-    - name: Show account for tfvars
+    - name: Show session account
       ansible.builtin.debug:
-        msg: "Set aws_account_id={{ aws_account_id }} in terraform.tfvars before apply."
+        msg: "Applying to aws_account_id={{ aws_account_id }} (matches terraform.tfvars)."
