@@ -1,0 +1,26 @@
+---
+- name: Check local DevSecOps tools
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Required CLIs
+      ansible.builtin.command: "which {{ item }}"
+      register: which_cli
+      changed_when: false
+      failed_when: which_cli.rc != 0
+      loop:
+        - terraform
+        - aws
+        - ansible
+    - name: Optional policy CLIs
+      ansible.builtin.command: "which {{ item }}"
+      register: which_opt
+      changed_when: false
+      failed_when: false
+      loop:
+        - conftest
+        - checkov
+    - name: Warn if cost-guard tools missing
+      ansible.builtin.debug:
+        msg: "Install conftest and checkov for deny-paid gates (brew/pip). Bootstrap continues."
+      when: which_opt.results | selectattr('rc', 'ne', 0) | list | length > 0

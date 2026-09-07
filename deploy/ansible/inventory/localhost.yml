@@ -1,0 +1,7 @@
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+      terraform_dir: "{{ playbook_dir }}/../../terraform"
+      tfvars_file: "{{ playbook_dir }}/../../terraform/envs/dev/terraform.tfvars"
+      cloud: aws

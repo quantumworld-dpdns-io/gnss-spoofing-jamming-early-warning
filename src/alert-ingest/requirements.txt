@@ -1,0 +1,2 @@
+# Lambda Python 3.12 runtime already includes boto3.
+# Keep this file empty-of-deps so the zip stays inside the free-tier deployment path.

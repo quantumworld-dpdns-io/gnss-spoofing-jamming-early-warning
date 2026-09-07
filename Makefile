@@ -12,7 +12,8 @@
         docs serve-docs \
         install-hooks \
         run-mcp-server run-api-gateway run-detection-engine \
-        package-deb package-rpm package-homebrew package-docker
+        package-deb package-rpm package-homebrew package-docker \
+        infra-plan infra-apply infra-verify infra-destroy cost-guard
 
 # ─── Build ────────────────────────────────────────────────
 SHELL := /bin/bash
@@ -45,6 +46,7 @@ test-rust:
 
 test-python:
 	cd src/detection-engine/python && $(PYTHON) -m pytest tests/ -v --cov
+	cd src/alert-ingest && $(PYTHON) -m pytest handler_test.py -v -o addopts=
 
 test-go:
 	cd src/api-gateway && $(GO) test ./... -v -race
@@ -73,7 +75,7 @@ lint-rust:
 	$(CARGO) clippy --workspace -- -D warnings && $(CARGO) fmt --check
 
 lint-python:
-	ruff check src/detection-engine/python/ tests/ && mypy src/detection-engine/python/
+	ruff check src/detection-engine/python/ src/alert-ingest/ tests/ && mypy src/detection-engine/python/
 
 lint-go:
 	cd src/api-gateway && $(GO) vet ./... && golangci-lint run
@@ -198,6 +200,22 @@ package-homebrew:
 
 package-docker: docker-build
 
+# ─── Zero-cost infra (local apply only) ────────────────────
+cost-guard:
+	bash deploy/scripts/cost-guard.sh
+
+infra-plan: cost-guard
+	cd deploy/ansible && ansible-playbook playbooks/preflight.yml
+
+infra-apply:
+	cd deploy/ansible && ansible-playbook playbooks/apply.yml -e confirm=true
+
+infra-verify:
+	cd deploy/ansible && ansible-playbook playbooks/verify.yml
+
+infra-destroy:
+	cd deploy/ansible && ansible-playbook playbooks/teardown.yml -e confirm=true
+
 # ─── Help ──────────────────────────────────────────────────
 help:
 	@echo "GNSS Spoofing Detection Makefile"
@@ -216,3 +234,7 @@ help:
 	@echo "dev                - Start development servers"
 	@echo "install-hooks      - Install git hooks"
 	@echo "package-deb        - Build Debian package"
+	@echo "cost-guard         - OPA deny-paid fixtures + terraform validate"
+	@echo "infra-plan         - Ansible preflight (no apply)"
+	@echo "infra-apply        - Local terraform apply (never CI)"
+	@echo "infra-destroy      - Local terraform destroy"

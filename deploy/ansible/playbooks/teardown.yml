@@ -1,0 +1,19 @@
+---
+- name: Destroy demo stack
+  hosts: localhost
+  gather_facts: false
+  vars:
+    confirm: false
+  tasks:
+    - name: Require confirm=true
+      ansible.builtin.assert:
+        that:
+          - confirm | bool
+        fail_msg: "Refusing destroy without -e confirm=true"
+
+    - name: Terraform destroy
+      ansible.builtin.command: >
+        terraform destroy -input=false -auto-approve
+        -var-file={{ tfvars_file }}
+      args:
+        chdir: "{{ terraform_dir }}"

@@ -1,0 +1,29 @@
+---
+- name: Smoke-test Function URL ingest
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Read terraform outputs
+      ansible.builtin.command: terraform output -json
+      args:
+        chdir: "{{ terraform_dir }}"
+      register: tf_out
+      changed_when: false
+
+    - name: Parse outputs
+      ansible.builtin.set_fact:
+        function_url: "{{ (tf_out.stdout | from_json).function_url.value }}"
+        ingest_secret: "{{ (tf_out.stdout | from_json).ingest_secret.value }}"
+
+    - name: POST demo alert
+      ansible.builtin.uri:
+        url: "{{ function_url }}"
+        method: POST
+        headers:
+          Content-Type: application/json
+          X-Alert-Token: "{{ ingest_secret }}"
+        body_format: json
+        body:
+          severity: info
+          detector: ansible-verify
+        status_code: [202]

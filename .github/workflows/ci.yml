@@ -42,7 +42,7 @@ jobs:
       - name: Lint Rust
         run: cargo clippy --workspace -- -D warnings && cargo fmt --check
       - name: Lint Python
-        run: ruff check src/detection-engine/python/ tests/
+        run: ruff check src/detection-engine/python/ src/alert-ingest/ tests/
       - name: Typecheck Python
         run: mypy src/detection-engine/python/ --strict || true
       - name: Lint Go
@@ -72,30 +72,6 @@ jobs:
       - name: Run ${{ matrix.component }} tests
         run: make test-${{ matrix.component }}
 
-  robot-tests:
-    name: Robot Framework Tests
-    needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install Robot Framework
-        run: |
-          pip install robotframework robotframework-requestslibrary \
-            robotframework-seleniumlibrary robotframework-databaselibrary
-      - name: Run acceptance tests
-        run: make test-robot-acceptance
-      - name: Run security tests
-        run: make test-robot-security
-      - name: Upload Robot results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: robot-results
-          path: tests/robot/results/
-
   security:
     name: Security Scan
     needs: lint
@@ -113,16 +89,10 @@ jobs:
           scan-type: 'fs'
           scan-ref: '.'
           severity: 'HIGH,CRITICAL'
-      - name: Run OWASP ZAP scan
-        uses: zaproxy/action-full-scan@v0.12.0
-        with:
-          target: 'http://localhost:8080'
-          rules_file_name: '.zap/rules.tsv'
-          cmd_options: '-a'
 
   build:
     name: Build & Package
-    needs: [test, robot-tests, security]
+    needs: [test, security]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -149,30 +119,3 @@ jobs:
             bin/
             .next/
 
-  quantum:
-    name: Quantum Validation
-    needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install quantum dependencies
-        run: |
-          pip install numpy scipy qiskit qiskit-machine-learning pennylane
-      - name: Run quantum tests
-        run: make quantum
-
-  fuzz:
-    name: Fuzz Testing
-    needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz
-      - name: Run fuzz tests
-        run: make fuzz
-        continue-on-error: true

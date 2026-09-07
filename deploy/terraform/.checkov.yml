@@ -1,0 +1,14 @@
+compact: true
+framework:
+  - terraform
+directory: deploy/terraform
+skip-check:
+  # VPC-attached Lambda requires NAT/EIP which the zero-cost policy forbids.
+  - CKV_AWS_117
+  # Customer-managed KMS keys are not Always Free; SSE-S3/AWS-owned keys are used instead.
+  - CKV_AWS_173
+  - CKV_AWS_145
+  # X-Ray tracing is out of the free-tier demo budget.
+  - CKV_AWS_50
+  # Function URL uses a shared secret header rather than IAM (local verify without SigV4).
+  - CKV_AWS_312

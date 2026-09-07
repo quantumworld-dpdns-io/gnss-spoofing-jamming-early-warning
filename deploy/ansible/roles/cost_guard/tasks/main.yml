@@ -1,0 +1,4 @@
+---
+- name: Run deny-paid fixtures
+  ansible.builtin.command: "{{ playbook_dir }}/../../scripts/cost-guard.sh"
+  changed_when: false

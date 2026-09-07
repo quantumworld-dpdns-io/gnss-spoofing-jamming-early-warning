@@ -1,0 +1,19 @@
+{
+  "resource_changes": [
+    {
+      "address": "module.budget.aws_budgets_budget.zero_cost",
+      "type": "aws_budgets_budget",
+      "change": { "actions": ["create"], "after": { "limit_amount": "0.0" } }
+    },
+    {
+      "address": "module.dynamodb.aws_dynamodb_table.events",
+      "type": "aws_dynamodb_table",
+      "change": { "actions": ["create"], "after": { "billing_mode": "PROVISIONED" } }
+    },
+    {
+      "address": "module.lambda.aws_lambda_function.ingest",
+      "type": "aws_lambda_function",
+      "change": { "actions": ["create"], "after": { "memory_size": 128 } }
+    }
+  ]
+}

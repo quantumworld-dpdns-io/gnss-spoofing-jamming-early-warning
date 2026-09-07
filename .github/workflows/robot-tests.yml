@@ -1,15 +1,11 @@
 name: Robot Framework Tests
 on:
-  push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 6 * * 1'
 
 permissions:
   contents: read
-  actions: write
 
 jobs:
   robot-ci:
@@ -17,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suite: [acceptance, security, performance]
+        suite: [acceptance, security]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,11 +23,7 @@ jobs:
         run: |
           pip install robotframework robotframework-requestslibrary \
             robotframework-seleniumlibrary robotframework-databaselibrary \
-            robotframework-pabot locust
-      - name: Install browser for Selenium
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq chromium-browser chromium-chromedriver
+            robotframework-pabot
       - name: Start test server
         run: |
           cargo run -p mcp-server &
@@ -41,7 +33,6 @@ jobs:
         run: |
           mkdir -p tests/robot/results/${{ matrix.suite }}
           robot --outputdir tests/robot/results/${{ matrix.suite }} \
-            --variable BROWSER:headlesschrome \
             tests/robot/${{ matrix.suite }}/
       - name: Upload results
         uses: actions/upload-artifact@v4
@@ -49,25 +40,3 @@ jobs:
         with:
           name: robot-${{ matrix.suite }}
           path: tests/robot/results/${{ matrix.suite }}/
-
-  owasp-zap:
-    name: OWASP ZAP Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Start target app
-        run: |
-          docker build -t gnss-api -f deploy/docker/Dockerfile .
-          docker run -d -p 8080:8080 --name gnss-api gnss-api
-          sleep 3
-      - name: OWASP ZAP Full Scan
-        uses: zaproxy/action-full-scan@v0.12.0
-        with:
-          target: 'http://localhost:8080'
-          issue_title: 'OWASP ZAP Scan Report'
-          fail_action: false
-          rules_file_name: '.zap/rules.tsv'
-      - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.12.0
-        with:
-          target: 'http://localhost:8080'

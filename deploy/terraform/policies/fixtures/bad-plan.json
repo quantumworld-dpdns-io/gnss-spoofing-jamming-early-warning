@@ -1,0 +1,19 @@
+{
+  "resource_changes": [
+    {
+      "address": "module.eks.aws_eks_cluster.this",
+      "type": "aws_eks_cluster",
+      "change": { "actions": ["create"], "after": {} }
+    },
+    {
+      "address": "aws_db_instance.main",
+      "type": "aws_db_instance",
+      "change": { "actions": ["create"], "after": {} }
+    },
+    {
+      "address": "aws_dynamodb_table.ondemand",
+      "type": "aws_dynamodb_table",
+      "change": { "actions": ["create"], "after": { "billing_mode": "PAY_PER_REQUEST" } }
+    }
+  ]
+}

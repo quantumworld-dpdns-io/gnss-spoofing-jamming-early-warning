@@ -1,7 +1,9 @@
 # ADR-005: Deployment Strategy
 
 ## Status
-Accepted
+Superseded for the default environment by [ADR-006](ADR-006-zero-cost-serverless.md)
+
+The EKS / Knative / RDS topology remains a **paid** option under `deploy/terraform-eks/` and Helm/ArgoCD. It is not applied by `make infra-apply`.
 
 ## Context
 The GNSS spoofing detection system must support both cloud SaaS and edge/embedded deployments for sensor nodes.

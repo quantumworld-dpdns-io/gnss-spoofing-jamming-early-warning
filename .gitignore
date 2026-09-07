@@ -23,3 +23,14 @@ vendor/
 .env.*
 !.env.example
 auto_commit.sh
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+tfplan.json
+crash.log
+deploy/terraform/.build/
+deploy/terraform/envs/dev/terraform.tfvars

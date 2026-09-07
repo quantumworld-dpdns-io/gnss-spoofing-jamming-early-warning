@@ -1,0 +1,23 @@
+---
+- name: Zero-cost preflight (AWS)
+  hosts: localhost
+  gather_facts: false
+  vars:
+    confirm: false
+  tasks:
+    - name: AWS identity
+      ansible.builtin.command: aws sts get-caller-identity --output json
+      register: aws_ident
+      changed_when: false
+
+    - name: Parse account id
+      ansible.builtin.set_fact:
+        aws_account_id: "{{ (aws_ident.stdout | from_json).Account }}"
+
+    - name: Run cost-guard (fixtures + terraform validate)
+      ansible.builtin.command: "{{ playbook_dir }}/../../scripts/cost-guard.sh"
+      changed_when: false
+
+    - name: Show account for tfvars
+      ansible.builtin.debug:
+        msg: "Set aws_account_id={{ aws_account_id }} in terraform.tfvars before apply."
